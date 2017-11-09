@@ -1,83 +1,84 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 
-REM Set parameters
-@CALL preferences.cmd
+@REM Set parameters
+@SET root=%~dp0
+@CALL %root%\preferences.bat
 
-REM get target server and database name
-REM set svr to the name of your machine
-set svr=%svr%
-set /p db= Enter target database name: 
-set db1='%db%'
-set bak= %1%
-set bak=%bak:"='%
+@REM get target server and database name
+@REM set svr to the name of your machine
+@SET svr=%svr% 
+@SET /p db= Enter target database name: 
+@SET db1='%db%'
+@SET bak= %1
+@SET bak=%bak:"='%
 for /f "tokens=* delims= " %%a in ("%bak%") do set bak=%%a
-set bak=N%bak%
+@SET bak=N%bak%
 
-REM check whether input file is a .bak
-set ext=%bak:~-5,4%
+@REM check whether input file is a .bak
+@SET ext=%bak:~-5,4%
 if /i %ext% EQU .bak goto continue
-echo.         
-echo .... NOT A .BAK FILE!
-echo. 
-echo Press any key to exit and try another file.
+@echo.       
+@echo .... NOT A .BAK FILE!
+@echo. 
+@echo Press any key to exit and try another file.
 pause>nul
 exit
 
 :continue
-REM check whether database exists and make sure user wants to overwrite it
-echo.         
-echo .... CHECKING WHETHER DATABASE EXISTS
-echo.     
-sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\exists.sql -v dbname=%db1% bak_file="%bak%" -o C:\Utilities\BAKTools\logs\exists.log
-type C:\Utilities\BAKTools\logs\exists.log
+@REM check whether database exists and make sure user wants to overwrite it
+@echo.         
+@echo .... CHECKING WHETHER DATABASE EXISTS
+@echo.     
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\exists.sql -v dbname=%db1% bak_file="%bak%" -o %root%\logs\exists.log
+type %root%\logs\exists.log
 pause>nul
 
-REM run restore query
-echo.      
-echo .... BEGINNING RESTORE NOW
-echo.     
-sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\restore_db.sql -v dbname=%db1% bak_file="%bak%" -o C:\Utilities\BAKTools\logs\log.log
+@REM run restore query
+@echo.      
+@echo .... BEGINNING RESTORE NOW
+@echo.     
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\restore_db.sql -v dbname=%db1% bak_file="%bak%" -o %root%\logs\log.log
 
-REM run three queries
-echo ..............................................................
-echo.  
-echo .... RUNNING POST-RESTORE QUERIES
-echo.     
-echo .... QUERY 1
-echo.     
-sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\sp_change_users_login.sql -v dbname=%db% -o C:\Utilities\BAKTools\logs\users.log
-echo .... QUERY 2
-echo.     
-sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\sp_grantdbaccess.sql -v dbname=%db% -o C:\Utilities\BAKTools\logs\access.log 
-echo .... QUERY 3
-echo.     
-sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\sp_addrolemember.sql -v dbname=%db% -o C:\Utilities\BAKTools\logs\role.log
-echo ..............................................................
-echo.       
+@REM run three queries
+@echo ..............................................................
+@echo.  
+@echo .... RUNNING POST-RESTORE QUERIES
+@echo.     
+@echo .... QUERY 1
+@echo.     
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\sp_change_users_login.sql -d %db% -o %root%\logs\users.log
+@echo .... QUERY 2
+@echo.     
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\sp_grantdbaccess.sql -d %db% -o %root%\logs\access.log
+@echo .... QUERY 3
+@echo.     
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\sp_addrolemember.sql -d %db% -o %root%\logs\role.log
+@echo ..............................................................
+@echo.       
 
 @REM is it a customer database?
 @REM :check_if_customer
 @REM set /p cust= Restoring a customer database? [y/n] 
 @REM if /i %cust% EQU y goto is_customer
 @REM if /i %cust% EQU n goto restore_done
-@REM REM invalid input
+@REM invalid input
 @REM echo "Choose y or n."
 @REM echo.
 @REM goto check_if_customer
 
-	@REM REM it's a customer db, so run customer queries
+	@REM  it's a customer db, so run customer queries
 	@REM :is_customer
 	@REM echo.     
 	@REM echo .... RUNNING CUSTOMER RESTORE QUERIES
 	@REM echo.     
-	@REM sqlcmd -U sa -P innovator -S %svr% -i C:\Utilities\BAKTools\queries\customer_restore.sql -v dbname=%db% -o C:\Utilities\BAKTools\logs\customer.log
+	@REM sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\customer_restore.sql -d %db% -o %root%\logs\customer.log
 
-REM done running queries!
+@REM done running queries!
 :restore_done
-echo.
-echo ..............................................................
-echo.    
-echo .... RESTORE PROCESS COMPLETE
-echo.    
+@echo.
+@echo ..............................................................
+@echo.    
+@echo .... RESTORE PROCESS COMPLETE
+@echo.    
 pause
