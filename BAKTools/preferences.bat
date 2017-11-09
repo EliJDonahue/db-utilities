@@ -3,3 +3,5 @@
 @SET svr=machinename
 @SET sa=sa
 @SET pwd=sapassword
+@SET mdf='C:\DataFiles\'
+@SET ldf='C:\DataFiles\'

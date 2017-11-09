@@ -38,7 +38,7 @@ pause>nul
 @echo.      
 @echo .... BEGINNING RESTORE NOW
 @echo.     
-sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\restore_db.sql -v dbname=%db1% bak_file="%bak%" -o %root%\logs\log.log
+sqlcmd -U %sa% -P %pwd% -S %svr% -i %root%\queries\restore_db.sql -v dbname=%db1% bak_file="%bak%" mdf_path="%mdf%" ldf_path="%ldf%" -o %root%\logs\log.log
 type %root%\logs\log.log
 @echo.
 

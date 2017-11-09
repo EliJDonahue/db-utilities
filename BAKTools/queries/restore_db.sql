@@ -15,11 +15,15 @@ DECLARE @disk nvarchar(1020);
 -- set database name and file path from bat script
 SET @dbname=$(dbname);
 SET @disk=$(bak_file);
+SET @new_mdf=$(mdf_path);
+SET @new_ldf=$(ldf_path);
 
 --PRINT @disk;
 
---SET @dbname='Test100SP3';
---SET @disk='C:\Utilities\RestoreDB\CoreAndSolutions100.bak';
+-- SET @dbname='Test';
+-- SET @disk='C:\Installers\11SP11CDImage\CoreAndSolutions110.bak';
+-- SET @new_mdf='F:\Data\';
+-- SET @new_ldf='F:\Log\';
 
 -- if we're overwriting an existing database, nuke all connections
 IF @dbname IS NOT NULL 
@@ -36,9 +40,29 @@ END
 
 
 -- get the logical names of the log and data files
-DECLARE @Table TABLE (LogicalName varchar(128),[PhysicalName] varchar(128), [Type] varchar, [FileGroupName] varchar(128), [Size] varchar(128), 
-            [MaxSize] varchar(128), [FileId]varchar(128), [CreateLSN]varchar(128), [DropLSN]varchar(128), [UniqueId]varchar(128), [ReadOnlyLSN]varchar(128), [ReadWriteLSN]varchar(128), 
-            [BackupSizeInBytes]varchar(128), [SourceBlockSize]varchar(128), [FileGroupId]varchar(128), [LogGroupGUID]varchar(128), [DifferentialBaseLSN]varchar(128), [DifferentialBaseGUID]varchar(128), [IsReadOnly]varchar(128), [IsPresent]varchar(128), [TDEThumbprint]varchar(128),[SnapshotURL] varchar(360)
+DECLARE @Table TABLE (
+	LogicalName varchar(128),
+	[PhysicalName] varchar(128), 
+	[Type] varchar, 
+	[FileGroupName] varchar(128), 
+	[Size] varchar(128), 
+    [MaxSize] varchar(128),
+	[FileId] varchar(128), 
+	[CreateLSN] varchar(128), 
+	[DropLSN] varchar(128), 
+	[UniqueId] varchar(128), 
+	[ReadOnlyLSN] varchar(128), 
+	[ReadWriteLSN] varchar(128), 
+    [BackupSizeInBytes] varchar(128), 
+	[SourceBlockSize] varchar(128), 
+	[FileGroupId] varchar(128), 
+	[LogGroupGUID] varchar(128), 
+	[DifferentialBaseLSN] varchar(128), 
+	[DifferentialBaseGUID] varchar(128), 
+	[IsReadOnly] varchar(128), 
+	[IsPresent] varchar(128), 
+	[TDEThumbprint] varchar(128),
+	[SnapshotURL] varchar(360)
 )
 INSERT INTO @table
 EXEC('
@@ -49,8 +73,6 @@ SET @mdf_name=(SELECT LogicalName FROM @Table WHERE Type='D')
 SET @ldf_name=(SELECT LogicalName FROM @Table WHERE Type='L')
 
 -- set new names for the log and data files
-SET @new_mdf='C:\DataFiles\';
-SET @new_ldf='C:\DataFiles\';
 SET @new_mdf+=@dbname;
 SET @new_ldf+=@dbname;
 SET @new_mdf+='_Data.mdf';
