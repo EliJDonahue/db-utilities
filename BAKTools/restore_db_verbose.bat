@@ -89,6 +89,35 @@ type %root%\logs\role.log
 @echo.
 @echo ..............................................................
 @echo.    
-@echo .... RESTORE PROCESS COMPLETE
+@echo .... RESTORE PROCESS COMPLETE.
 @echo.    
+pause
+
+:check_if_restart_services
+@SET /p res= RESTART SQL AND IIS? [Y/N] 
+if /i %res% EQU Y goto do_restart
+if /i %res% EQU N goto end_of_script
+@REM invalid input
+@echo "Choose Y or N."
+@echo.
+goto check_if_restart_services
+
+	@REM restart SQL server and IIS
+	:do_restart
+	@echo.     
+	@echo .... RESTARTING SQL AND IIS
+	@echo.     
+	@echo STOPPING SQL SERVER
+	net stop mssqlserver
+	@echo STARTING SQL SERVER
+	net start mssqlserver
+	@echo STOPPING IIS.
+	@echo STOPPING IIS/W3SVC
+	net stop WAS /y
+	@echo STARTING IIS/W3SVC
+	net start W3SVC
+	@echo.
+
+:end_of_script
+@echo DONE
 pause
